@@ -10,16 +10,17 @@ const getProducts = async () => {
 };
 
 const getProduct = async (request) => {
-  return await Product.findById(request.params.id);
+  const searchQuery = request.params.search;
+  return await Product.find({ name: { $regex: searchQuery, $options: "i" } });
 };
 
 const updateProduct = async (request) => {
   try {
     console.log(request.body);
-    const Product = await Product.findOne({
+    const product = await Product.findOne({
       _id: request.params.id,
     });
-    if (!Product)
+    if (!product)
       throw new AppError(404, "Product not found or not authorized");
 
     return await Product.findByIdAndUpdate(
@@ -36,10 +37,8 @@ const updateProduct = async (request) => {
 };
 
 const deleteProduct = async (request) => {
-  const Product = await Product.findOne({
-    _id: request.params.id,
-  });
-  if (!Product) throw new Error("Product not found or not authorized");
+  const product = await Product.findById(request.params.id);
+  if (!product) throw new Error("Product not found or not authorized");
   return await Product.findByIdAndDelete(request.params.id);
 };
 

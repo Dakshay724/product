@@ -5,10 +5,12 @@ import axios from "axios";
 export const createProduct = createAsyncThunk(
   "product/createProduct",
   async (productData, { rejectWithValue }) => {
+    const { _id, isEdit, ...rest } = productData;
+
     try {
       const response = await axios.post(
         "http://localhost:4000/product/create",
-        productData
+        rest
       );
       return response.data.data;
     } catch (error) {
@@ -31,27 +33,14 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
-export const fetchProduct = createAsyncThunk(
-  "product/fetchProduct",
-  async (productId, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(
-        `http://localhost:4000/product/product/${productId}`
-      );
-      return response.data.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data.message);
-    }
-  }
-);
-
 export const updateProduct = createAsyncThunk(
   "product/updateProduct",
-  async ({ productId, productData }, { rejectWithValue }) => {
+  async (productData, { rejectWithValue }) => {
     try {
+      const { _id, isEdit, ...rest } = productData;
       const response = await axios.put(
-        `http://localhost:4000/product/product/${productId}`,
-        productData
+        `http://localhost:4000/product/product/${productData._id}`,
+        rest
       );
       return response.data.data;
     } catch (error) {
@@ -75,10 +64,10 @@ export const deleteProduct = createAsyncThunk(
 );
 export const searchProduct = createAsyncThunk(
   "product/searchProduct",
-  async (productId, { rejectWithValue }) => {
+  async (search, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(
-        `http://localhost:4000/product/product/${productId}`
+      const response = await axios.get(
+        `http://localhost:4000/product/search/${search}`
       );
       return response.data.data;
     } catch (error) {
@@ -118,14 +107,14 @@ const productSlice = createSlice({
         state.status = "failed";
         state.error = action.payload;
       })
-      .addCase(fetchProduct.pending, (state) => {
+      .addCase(searchProduct.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(fetchProduct.fulfilled, (state, action) => {
+      .addCase(searchProduct.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.post = action.payload;
+        state.product = action.payload;
       })
-      .addCase(fetchProduct.rejected, (state, action) => {
+      .addCase(searchProduct.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })
@@ -135,7 +124,7 @@ const productSlice = createSlice({
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.status = "succeeded";
         const index = state.product.findIndex(
-          (post) => post._id === action.payload._id
+          (product) => product._id === action.payload._id
         );
         if (index !== -1) {
           state.product[index] = action.payload;
@@ -151,7 +140,7 @@ const productSlice = createSlice({
       .addCase(deleteProduct.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.product = state.product.filter(
-          (post) => post._id !== action.meta.arg
+          (product) => product._id !== action.meta.arg
         );
       })
       .addCase(deleteProduct.rejected, (state, action) => {

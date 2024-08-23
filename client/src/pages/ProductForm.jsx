@@ -6,13 +6,16 @@ import DateInput from '../components/DateInput';
 import TextArea from '../components/TextArea';
 
 const ProductForm = ({ product, onSave }) => {
-  const { name='', price='', category='', expiry='', description='' } = product 
+  const { name='', price='', category='', expiry='', description='',isEdit=false,_id='' } = product 
+
   const [formData, setFormData] = useState({
     name: name ,
     price: price ,
     category: category ,
     expiry: expiry ,
     description: description ,
+    isEdit: isEdit,
+    _id:_id
   });
 
   // Generic change handler
@@ -31,6 +34,7 @@ const ProductForm = ({ product, onSave }) => {
   return (
     <div style={{ padding: '20px' }}>
       <TextInput
+      
         label="Product Name"
         value={formData.name}
         onChange={(e) => handleChange('name', e.target.value)}
